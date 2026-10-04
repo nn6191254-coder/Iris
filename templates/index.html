@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f4f7f2">
+    <title>Iris — Flower identifier</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <main class="page-shell">
+        <header class="topbar">
+            <a class="brand" href="{{ url_for('home') }}" aria-label="Iris home">
+                <span class="brand-mark" aria-hidden="true">i.</span>
+                <span>fieldnotes<span class="brand-dot">.</span></span>
+            </a>
+            <span class="topbar-note"><span class="status-dot" aria-hidden="true"></span> Iris classifier</span>
+        </header>
+
+        <section class="intro" aria-labelledby="page-title">
+            <p class="eyebrow">A little science, made simple</p>
+            <h1 id="page-title">Meet your <span>flower.</span></h1>
+            <p class="intro-copy">Enter four measurements to identify an Iris species. For the best-supported result, use measurements within the ranges shown.</p>
+        </section>
+
+        <div class="workspace">
+            <section class="form-card" aria-labelledby="measurements-title">
+                <div class="card-heading">
+                    <div>
+                        <p class="step-label">YOUR SPECIMEN</p>
+                        <h2 id="measurements-title">Flower measurements</h2>
+                    </div>
+                    <span class="measure-icon" aria-hidden="true">✳</span>
+                </div>
+
+                {% if errors %}
+                <div class="alert" role="alert" aria-labelledby="error-title">
+                    <p id="error-title" class="alert-title">Check your measurements</p>
+                    <ul>
+                        {% for error in errors %}
+                        <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <form action="{{ url_for('predict') }}" method="post">
+                    <div class="field-grid">
+                        {% for feature in features %}
+                        <div class="field">
+                            <label for="{{ feature.key }}">{{ feature.label }} <span>(cm)</span></label>
+                            <div class="input-wrap">
+                                <input
+                                    id="{{ feature.key }}"
+                                    name="{{ feature.key }}"
+                                    type="number"
+                                    inputmode="decimal"
+                                    step="0.1"
+                                    min="{{ feature.minimum }}"
+                                    max="{{ feature.maximum }}"
+                                    value="{{ values.get(feature.key, '') }}"
+                                    placeholder="e.g. {{ feature.minimum }}"
+                                    required
+                                >
+                                <span class="unit" aria-hidden="true">cm</span>
+                            </div>
+                            <p class="field-hint">Range {{ feature.minimum }}–{{ feature.maximum }} cm</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <button class="submit-button" type="submit">
+                        <span>Identify flower</span>
+                        <span aria-hidden="true">↗</span>
+                    </button>
+                </form>
+                <p class="privacy-note"><span aria-hidden="true">✦</span> Measurements are only used to make this prediction.</p>
+            </section>
+
+            <aside class="result-card{% if prediction is defined %} has-result{% endif %}" aria-live="polite" aria-atomic="true">
+                {% if prediction is defined %}
+                <div class="result-content">
+                    <span class="result-kicker"><span class="result-check" aria-hidden="true">✓</span> IDENTIFICATION COMPLETE</span>
+                    <div class="flower-art" aria-hidden="true">
+                        <span class="flower-orbit orbit-one"></span>
+                        <span class="flower-orbit orbit-two"></span>
+                        <span class="flower-center">✳</span>
+                    </div>
+                    <p class="result-label">Your flower is most likely</p>
+                    <h2>{{ prediction }}</h2>
+                    <p class="scientific-name"><i>{{ predicted_label }}</i></p>
+                    <div class="result-divider"></div>
+                    <p class="result-footnote">Predicted by a Support Vector Machine trained for the Iris dataset. This model does not provide a confidence score.</p>
+                </div>
+                {% else %}
+                <div class="empty-content">
+                    <div class="empty-art" aria-hidden="true">
+                        <span class="empty-stem"></span>
+                        <span class="empty-leaf leaf-left"></span>
+                        <span class="empty-leaf leaf-right"></span>
+                        <span class="empty-petal petal-top"></span>
+                        <span class="empty-petal petal-left"></span>
+                        <span class="empty-petal petal-right"></span>
+                        <span class="empty-petal petal-bottom"></span>
+                        <span class="empty-center"></span>
+                    </div>
+                    <p class="empty-kicker">YOUR RESULT</p>
+                    <h2>A discovery<br>is just ahead.</h2>
+                    <p>Your identification will appear here once you add the measurements.</p>
+                </div>
+                {% endif %}
+                <div class="result-card-footer"><span>IRIS · 3 SPECIES</span><span>01 / 03</span></div>
+            </aside>
+        </div>
+
+        <footer class="page-footer">
+            <span>MADE FOR THE CURIOUS</span>
+            <span>Sepal + petal measurements · Centimeters</span>
+        </footer>
+    </main>
+</body>
+</html>
